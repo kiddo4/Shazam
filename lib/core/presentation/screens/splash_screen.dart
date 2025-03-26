@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mshasam/core/constants/app_colors.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:mshasam/core/presentation/screens/main_screen.dart';
 import 'package:mshasam/features/audio_recognition/presentation/screens/movie_recognition_screen.dart';
 
 class SplashScreen extends StatelessWidget {
@@ -14,7 +15,7 @@ class SplashScreen extends StatelessWidget {
         onTap: () {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
-              builder: (context) => const MovieRecognitionScreen(),
+              builder: (context) => const MainScreen(),
             ),
           );
         },
