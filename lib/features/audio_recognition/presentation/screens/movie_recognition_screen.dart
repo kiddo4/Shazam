@@ -52,11 +52,8 @@ class _MovieRecognitionScreenState
                 end: Alignment.bottomCenter,
                 colors: [
                   AppColors.primary.withOpacity(0.8),
-                  AppColors.primary.withOpacity(0.2),
-                  AppColors.background,
                   AppColors.background,
                 ],
-                stops: const [0.0, 0.2, 0.5, 1.0],
               ),
             ),
           ),
