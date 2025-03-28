@@ -184,23 +184,34 @@ class _MovieRecognitionScreenState
                     ),
                   ),
                   const Spacer(),
+
+                  Spacer(),
                   // Enhanced footer
-                  Text(
-                    'Powered by MShasam',
-                    style: TextStyle(
-                      color: AppColors.text.withOpacity(0.5),
-                      fontSize: 16,
-                      letterSpacing: 0.5,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 1.0),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: 50,
+                        ),
+                        Text(
+                          'Powered by MShazam',
+                          style: TextStyle(
+                            color: AppColors.text.withOpacity(0.5),
+                            fontSize: 16,
+                            letterSpacing: 0.5,
+                          ),
+                        ).animate(
+                          delay: 400.ms,
+                          effects: [
+                            FadeEffect(duration: 600.ms),
+                            SlideEffect(
+                                begin: const Offset(0, 0.2), end: Offset.zero),
+                          ],
+                        ),
+                      ],
                     ),
-                  ).animate(
-                    delay: 400.ms,
-                    effects: [
-                      FadeEffect(duration: 600.ms),
-                      SlideEffect(
-                          begin: const Offset(0, 0.2), end: Offset.zero),
-                    ],
                   ),
-                  const SizedBox(height: 20),
                 ],
               ),
             ),
