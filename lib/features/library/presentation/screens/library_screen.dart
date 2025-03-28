@@ -10,12 +10,48 @@ class LibraryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // Temporary movie data for demonstration
     final movies = [
-      {'title': 'Inception', 'year': '2010', 'timestamp': '2 hours ago'},
-      {'title': 'Black panther', 'year': '2020', 'timestamp': '1 hour ago'},
-      {'title': 'Inception', 'year': '2010', 'timestamp': '2 hours ago'},
-      {'title': 'The Dark Knight', 'year': '2008', 'timestamp': '5 hours ago'},
-      {'title': 'Interstellar', 'year': '2014', 'timestamp': 'Yesterday'},
-      {'title': 'avenegers', 'year': '2013', 'timestamp': '2 weeks ago'},
+      {
+        'title': 'Inception',
+        'year': '2010',
+        'timestamp': '2 hours ago',
+        'posterUrl':
+            'https://image.tmdb.org/t/p/w500/8IB2e4r4oVhHnANbnm7O3Tj4dYz.jpg'
+      },
+      {
+        'title': 'Black panther',
+        'year': '2020',
+        'timestamp': '1 hour ago',
+        'posterUrl':
+            'https://image.tmdb.org/t/p/w500/uxzzxijgPIY7slzFvMotPv8wjKA.jpg'
+      },
+      {
+        'title': 'Inception',
+        'year': '2010',
+        'timestamp': '2 hours ago',
+        'posterUrl':
+            'https://image.tmdb.org/t/p/w500/8IB2e4r4oVhHnANbnm7O3Tj4dYz.jpg'
+      },
+      {
+        'title': 'The Dark Knight',
+        'year': '2008',
+        'timestamp': '5 hours ago',
+        'posterUrl':
+            'https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg'
+      },
+      {
+        'title': 'Interstellar',
+        'year': '2014',
+        'timestamp': 'Yesterday',
+        'posterUrl':
+            'https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg'
+      },
+      {
+        'title': 'avenegers',
+        'year': '2013',
+        'timestamp': '2 weeks ago',
+        'posterUrl':
+            'https://image.tmdb.org/t/p/w500/RYMX2wcKCBAr24UyPD7xwmjaTn.jpg'
+      },
     ];
 
     return Scaffold(

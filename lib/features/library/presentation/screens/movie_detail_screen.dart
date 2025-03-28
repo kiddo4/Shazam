@@ -17,46 +17,51 @@ class MovieDetailScreen extends StatelessWidget {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 300,
+            expandedHeight: 400, // Increased height for better image display
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 fit: StackFit.expand,
                 children: [
+                  // Movie Poster Image
+                  Image.network(
+                    movie['posterUrl'] ??
+                        'https://image.tmdb.org/t/p/w500/your_fallback_image.jpg',
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              AppColors.primary,
+                              AppColors.background,
+                            ],
+                          ),
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Icons.movie,
+                            size: 120,
+                            color: Colors.white.withOpacity(0.5),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  // Gradient overlay for better text readability
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          AppColors.primary,
+                          Colors.transparent,
+                          Colors.black.withOpacity(0.5),
                           AppColors.background,
                         ],
-                      ),
-                    ),
-                  ),
-                  Center(
-                    child: Icon(
-                      Icons.movie,
-                      size: 120,
-                      color: Colors.white.withOpacity(0.5),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    child: Container(
-                      height: 100,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            AppColors.background,
-                          ],
-                        ),
+                        stops: const [0.3, 0.7, 1.0],
                       ),
                     ),
                   ),
