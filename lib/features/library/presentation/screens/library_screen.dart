@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:mshasam/core/constants/app_colors.dart';
+import 'package:mshasam/features/library/presentation/screens/movie_detail_screen.dart';
 
 class LibraryScreen extends StatelessWidget {
   const LibraryScreen({super.key});
@@ -53,59 +54,63 @@ class LibraryScreen extends StatelessWidget {
                   final movie = movies[index];
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 16),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withOpacity(0.1),
-                            blurRadius: 20,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(16),
-                        leading: Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.movie,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        title: Text(
-                          movie['title']!,
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 4),
-                            Text(
-                              movie['year']!,
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              movie['timestamp']!,
-                              style: TextStyle(
-                                color: AppColors.text.withOpacity(0.5),
-                                fontSize: 12,
-                              ),
+                    child: GestureDetector(
+                      onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => MovieDetailScreen(
+                                movie: movie,
+                              ))),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withOpacity(0.1),
+                              blurRadius: 20,
+                              offset: const Offset(0, 5),
                             ),
                           ],
                         ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.more_vert),
-                          onPressed: () {
-                           
-                          },
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(16),
+                          leading: Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.movie,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          title: Text(
+                            movie['title']!,
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 4),
+                              Text(
+                                movie['year']!,
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                movie['timestamp']!,
+                                style: TextStyle(
+                                  color: AppColors.text.withOpacity(0.5),
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.more_vert),
+                            onPressed: () {},
+                          ),
                         ),
                       ),
                     ),
