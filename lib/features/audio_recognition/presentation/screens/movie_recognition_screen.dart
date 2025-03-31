@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:mshasam/core/constants/app_colors.dart';
 import 'package:mshasam/features/audio_recognition/data/repositories/audio_repository_impl.dart';
+import 'package:mshasam/features/library/presentation/screens/movie_detail_screen.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class MovieRecognitionScreen extends ConsumerStatefulWidget {
   const MovieRecognitionScreen({super.key});
@@ -12,28 +14,90 @@ class MovieRecognitionScreen extends ConsumerStatefulWidget {
       _MovieRecognitionScreenState();
 }
 
+enum RecognitionState { idle, listening, recognizing, recognized, error }
+
 class _MovieRecognitionScreenState
     extends ConsumerState<MovieRecognitionScreen> {
-  bool _isListening = false;
+  RecognitionState _state = RecognitionState.idle;
+  Map<String, String>? _recognizedMovie;
+  String? _errorMessage;
+
+  // Add method to open app settings
+  void _openAppSettings() async {
+    await openAppSettings();
+  }
 
   void _toggleListening() async {
     final audioRepository = ref.read(audioRepositoryProvider);
 
-    if (_isListening) {
+    if (_state == RecognitionState.listening) {
+      setState(() => _state = RecognitionState.recognizing);
+
       final result = await audioRepository.stopRecording();
       result.fold(
-        (error) => ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error)),
-        ),
-        (_) => setState(() => _isListening = false),
+        (error) {
+          setState(() {
+            _state = RecognitionState.error;
+            _errorMessage = error;
+          });
+        },
+        (movie) {
+          setState(() {
+            _state = RecognitionState.recognized;
+            _recognizedMovie = movie;
+          });
+        },
       );
-    } else {
+    } else if (_state == RecognitionState.idle ||
+        _state == RecognitionState.error ||
+        _state == RecognitionState.recognized) {
+      // Check microphone permission before starting
+      final permissionStatus = await Permission.microphone.status;
+      if (permissionStatus.isDenied || permissionStatus.isPermanentlyDenied) {
+        final result = await Permission.microphone.request();
+        if (!result.isGranted) {
+          setState(() {
+            _state = RecognitionState.error;
+            _errorMessage =
+                'Microphone permission denied. Please enable it in settings.';
+          });
+          return;
+        }
+      }
+
       final result = await audioRepository.startRecording();
       result.fold(
-        (error) => ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error)),
+        (error) {
+          setState(() {
+            _state = RecognitionState.error;
+            _errorMessage = error;
+          });
+        },
+        (_) {
+          setState(() {
+            _state = RecognitionState.listening;
+            _errorMessage = null;
+          });
+        },
+      );
+    }
+  }
+
+  void _resetRecognition() {
+    setState(() {
+      _state = RecognitionState.idle;
+      _recognizedMovie = null;
+      _errorMessage = null;
+    });
+  }
+
+  void _viewMovieDetails() {
+    if (_recognizedMovie != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MovieDetailScreen(movie: _recognizedMovie!),
         ),
-        (_) => setState(() => _isListening = true),
       );
     }
   }
@@ -44,7 +108,6 @@ class _MovieRecognitionScreenState
       backgroundColor: AppColors.background,
       body: Stack(
         children: [
-          // Enhanced gradient background
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -54,6 +117,7 @@ class _MovieRecognitionScreenState
                   AppColors.primary.withOpacity(0.8),
                   AppColors.background,
                 ],
+                // Fixed: 3 stops for 3 colors
               ),
             ),
           ),
@@ -65,9 +129,7 @@ class _MovieRecognitionScreenState
                   const Spacer(),
                   // Enhanced title animation
                   Text(
-                    _isListening
-                        ? 'Listening for Movies...'
-                        : 'Tap to Discover Movies',
+                    _getStatusText(),
                     style: const TextStyle(
                       color: AppColors.text,
                       fontSize: 28,
@@ -84,9 +146,7 @@ class _MovieRecognitionScreenState
                   const SizedBox(height: 20),
                   // Enhanced subtitle animation
                   Text(
-                    _isListening
-                        ? 'Playing something?'
-                        : 'Hold tight while we identify your movie',
+                    _getSubtitleText(),
                     style: TextStyle(
                       color: AppColors.text.withOpacity(0.7),
                       fontSize: 18,
@@ -100,14 +160,55 @@ class _MovieRecognitionScreenState
                           begin: const Offset(0, -0.2), end: Offset.zero),
                     ],
                   ),
+                  // Add settings button when permission is denied
+                  if (_state == RecognitionState.error &&
+                      (_errorMessage?.contains('permission') ?? false))
+                    Padding(
+                      padding: const EdgeInsets.only(top: 20),
+                      child: ElevatedButton(
+                        onPressed: _openAppSettings,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        child: const Text('Open Settings'),
+                      ),
+                    ).animate().fadeIn().scale(),
+
+                  // Existing movie details button
+                  if (_state == RecognitionState.recognized &&
+                      _recognizedMovie != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 20),
+                      child: ElevatedButton(
+                        onPressed: _viewMovieDetails,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        child: const Text('View Movie Details'),
+                      ),
+                    ).animate().fadeIn().scale(),
                   const Spacer(),
                   // Enhanced button animations
                   GestureDetector(
-                    onTap: _toggleListening,
+                    onTap: _state == RecognitionState.recognizing
+                        ? null
+                        : _toggleListening,
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        if (_isListening)
+                        if (_state == RecognitionState.listening)
                           ...List.generate(
                             3,
                             (index) => Container(
@@ -142,25 +243,23 @@ class _MovieRecognitionScreenState
                           width: 220,
                           height: 220,
                           decoration: BoxDecoration(
-                            color: _isListening
-                                ? AppColors.primary
-                                : AppColors.surface,
+                            color: _getButtonColor(),
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: (_isListening
-                                        ? AppColors.primary
-                                        : AppColors.surface)
-                                    .withOpacity(0.4),
+                                color: _getButtonColor().withOpacity(0.4),
                                 blurRadius: 40,
                                 spreadRadius: 15,
                               ),
                             ],
                           ),
                           child: Icon(
-                            _isListening ? Icons.movie : Icons.movie_outlined,
+                            _getButtonIcon(),
                             size: 90,
-                            color: _isListening ? Colors.white : AppColors.text,
+                            color: _state == RecognitionState.listening ||
+                                    _state == RecognitionState.recognized
+                                ? Colors.white
+                                : AppColors.text,
                           ).animate(
                             effects: [
                               ScaleEffect(
@@ -184,33 +283,21 @@ class _MovieRecognitionScreenState
                     ),
                   ),
                   const Spacer(),
-
-                  Spacer(),
                   // Enhanced footer
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 1.0),
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          height: 50,
-                        ),
-                        Text(
-                          'Powered by MShazam',
-                          style: TextStyle(
-                            color: AppColors.text.withOpacity(0.5),
-                            fontSize: 16,
-                            letterSpacing: 0.5,
-                          ),
-                        ).animate(
-                          delay: 400.ms,
-                          effects: [
-                            FadeEffect(duration: 600.ms),
-                            SlideEffect(
-                                begin: const Offset(0, 0.2), end: Offset.zero),
-                          ],
-                        ),
-                      ],
+                  Text(
+                    'Powered by MShazam',
+                    style: TextStyle(
+                      color: AppColors.text.withOpacity(0.5),
+                      fontSize: 16,
+                      letterSpacing: 0.5,
                     ),
+                  ).animate(
+                    delay: 400.ms,
+                    effects: [
+                      FadeEffect(duration: 600.ms),
+                      SlideEffect(
+                          begin: const Offset(0, 0.2), end: Offset.zero),
+                    ],
                   ),
                 ],
               ),
@@ -219,5 +306,65 @@ class _MovieRecognitionScreenState
         ],
       ),
     );
+  }
+
+  String _getStatusText() {
+    switch (_state) {
+      case RecognitionState.idle:
+        return 'Tap to Discover Movies';
+      case RecognitionState.listening:
+        return 'Listening for Movies...';
+      case RecognitionState.recognizing:
+        return 'Recognizing...';
+      case RecognitionState.recognized:
+        return 'Found: ${_recognizedMovie?['title'] ?? 'Unknown'}';
+      case RecognitionState.error:
+        return 'Recognition Failed';
+    }
+  }
+
+  String _getSubtitleText() {
+    switch (_state) {
+      case RecognitionState.idle:
+        return 'Hold tight while we identify your movie';
+      case RecognitionState.listening:
+        return 'Playing something?';
+      case RecognitionState.recognizing:
+        return 'Processing audio...';
+      case RecognitionState.recognized:
+        return 'Added to your library!';
+      case RecognitionState.error:
+        return _errorMessage ?? 'Something went wrong';
+    }
+  }
+
+  Color _getButtonColor() {
+    switch (_state) {
+      case RecognitionState.listening:
+        return Colors.red;
+      case RecognitionState.recognizing:
+        return Colors.orange;
+      case RecognitionState.recognized:
+        return Colors.green;
+      case RecognitionState.error:
+        return Colors.redAccent;
+      case RecognitionState.idle:
+        return AppColors.surface;
+    }
+  }
+
+  IconData _getButtonIcon() {
+    switch (_state) {
+      case RecognitionState.listening:
+        return Icons.stop;
+      case RecognitionState.recognizing:
+        return Icons.hourglass_top;
+      case RecognitionState.recognized:
+        return Icons.check;
+      case RecognitionState.error:
+        return Icons.error_outline;
+      case RecognitionState.idle:
+        return Icons.movie_outlined;
+    }
   }
 }
